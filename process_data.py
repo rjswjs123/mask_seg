@@ -5,6 +5,7 @@ from glob import glob
 from tqdm import tqdm
 import json
 
+
 """ Creating a directory """
 def create_dir(path):
     if not os.path.exists(path):
@@ -15,7 +16,7 @@ def process_data(image_path, json_path, save_dir):
     """ Reading the JSON file """
     # with open(json_path,"r",encoding="utf8") as f:
     #     c
-    f = open(json_path, "r")
+    f = open(json_path, "r",encoding='UTF8')
     data = f.read()
     json_data=json.loads(data)
     json_img_data=json_data["_via_img_metadata"]
@@ -23,14 +24,22 @@ def process_data(image_path, json_path, save_dir):
     for key, value in tqdm(json_img_data.items()):
         # print(key,value)
         filename = value["filename"]
-        print(filename)
 
         """ Extracting the name of the image, by removing its extension """
         name = filename.split(".")[0]
 
-        """ Reading the image """
-        image = cv2.imread(f"{image_path}/{filename}", cv2.IMREAD_GRAYSCALE)
-        H, W = image.shape
+        path='dataset2/001/bottom'
+        img_name=filename
+        full_path = path + '/' + img_name
+        img_array=np.fromfile(full_path,np.uint8)
+        img=cv2.imdecode(img_array,cv2.IMREAD_GRAYSCALE)
+        print(img.shape)
+        H, W = img.shape
+        # """ Reading the image """
+        # image=cv2.imread('./dataset2/001/bottom/CS_T1_말_1_B1.JPG')
+        # print(image.shape)
+        # image = cv2.imread(f"{image_path}/{filename}", cv2.IMREAD_GRAYSCALE)
+        # H, W = image.shape
 
         """ Extracting information about the annotated regions """
         regions = value["regions"]
@@ -62,9 +71,9 @@ def process_data(image_path, json_path, save_dir):
 
                 mask = cv2.circle(mask,center_coordinates,radius,color,thickness)
 
-
+        name='sss'
         """ Saving the image and mask """
-        cv2.imwrite(f"{save_dir}/image/{name}.png", image)
+        cv2.imwrite(f"{save_dir}/image/{name}.png", img)
         cv2.imwrite(f"{save_dir}/mask/{name}.png", mask)
 
 if __name__ == "__main__":
