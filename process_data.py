@@ -14,8 +14,7 @@ def create_dir(path):
 """ Processing the data and saving the image and mask """
 def process_data(image_path, json_path, save_dir):
     """ Reading the JSON file """
-    # with open(json_path,"r",encoding="utf8") as f:
-    #     c
+    i=0
     f = open(json_path, "r",encoding='UTF8')
     data = f.read()
     json_data=json.loads(data)
@@ -26,20 +25,15 @@ def process_data(image_path, json_path, save_dir):
         filename = value["filename"]
 
         """ Extracting the name of the image, by removing its extension """
-        name = filename.split(".")[0]
-
-        path='dataset2/001/bottom'
+        input_name='input_%03d' % i
+        label_name='label_%03d' % i
+        # name = filename.split("_말_")[0]
+        path= image_path
         img_name=filename
         full_path = path + '/' + img_name
         img_array=np.fromfile(full_path,np.uint8)
         img=cv2.imdecode(img_array,cv2.IMREAD_GRAYSCALE)
-        print(img.shape)
         H, W = img.shape
-        # """ Reading the image """
-        # image=cv2.imread('./dataset2/001/bottom/CS_T1_말_1_B1.JPG')
-        # print(image.shape)
-        # image = cv2.imread(f"{image_path}/{filename}", cv2.IMREAD_GRAYSCALE)
-        # H, W = image.shape
 
         """ Extracting information about the annotated regions """
         regions = value["regions"]
@@ -54,42 +48,31 @@ def process_data(image_path, json_path, save_dir):
                 cx = int(region["shape_attributes"]["cx"])
                 cy = int(region["shape_attributes"]["cy"])
                 rx = int(region["shape_attributes"]["r"])
-                # ry = int(region["shape_attributes"]["ry"])
 
                 center_coordinates = (cx, cy)
-                print(center_coordinates)
                 radius=rx
                 color = (255, 255, 255)
                 thickness = -1
-
-                # axes_length = (rx, ry)
-                # angle = 0
-                # start_angle = 0
-                # end_angle = 360
-                # color = (255, 255, 255)
-                # thickness = -1
-
                 mask = cv2.circle(mask,center_coordinates,radius,color,thickness)
 
-        name='sss'
         """ Saving the image and mask """
-        cv2.imwrite(f"{save_dir}/image/{name}.png", img)
-        cv2.imwrite(f"{save_dir}/mask/{name}.png", mask)
+        cv2.imwrite(f"{save_dir}/image/{input_name}.png", img)
+        cv2.imwrite(f"{save_dir}/mask/{label_name}.png", mask)
+        i+=1
 
 if __name__ == "__main__":
     """ Dataset path """
-    dataset_path = "dataset2"
+    dataset_path = "7H-MGP912406000"
     dataset = glob(os.path.join(dataset_path, "*"))
-
     """ Loop over the dataset """
     for data in dataset:
         """ Path for the files """
         image_path = glob(os.path.join(data, "*"))[0]
-        json_path = glob(os.path.join(data, "*.json"))[0]
-
+        json_path = glob(os.path.join(image_path , "*.json"))[0]
+        # print(data)
         """ Creating directories to save the data """
         dir_name = data.split("/")[0]
-        save_dir = f"data/{dir_name}/"
+        save_dir = f"data/{dir_name}/bottom"
         create_dir(f"{save_dir}/image")
         create_dir(f"{save_dir}/mask")
 
